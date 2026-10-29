@@ -1,6 +1,5 @@
 PRAGMA foreign_keys = ON;
 
-DROP TABLE IF EXISTS tags;
 DROP TABLE IF EXISTS ratings;
 DROP TABLE IF EXISTS movie_genres;
 DROP TABLE IF EXISTS movies;
@@ -8,39 +7,34 @@ DROP TABLE IF EXISTS genres;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS occupations;
 
--- Справочник профессий
 CREATE TABLE occupations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE
 );
 
--- Справочник жанров
 CREATE TABLE genres (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE
 );
 
--- Пользователи
 CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     first_name TEXT NOT NULL,
     last_name TEXT NOT NULL,
-    email TEXT NOT NULL UNIQUE,
-    gender TEXT NOT NULL CHECK (gender IN ('male', 'female')),
+    email TEXT NOT NULL UNIQUE, 
+    gender TEXT NOT NULL CHECK (gender IN ('male', 'female')), 
     register_date TEXT NOT NULL DEFAULT (date('now')),
     occupation_id INTEGER NOT NULL,
     FOREIGN KEY (occupation_id) REFERENCES occupations(id)
         ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
--- Фильмы
 CREATE TABLE movies (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     year INTEGER CHECK (year IS NULL OR year >= 1888)
 );
 
--- Связь фильмов и жанров (многие ко многим)
 CREATE TABLE movie_genres (
     movie_id INTEGER NOT NULL,
     genre_id INTEGER NOT NULL,
@@ -51,12 +45,11 @@ CREATE TABLE movie_genres (
         ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
--- Отзывы (оценки)
 CREATE TABLE ratings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     movie_id INTEGER NOT NULL,
-    rating REAL NOT NULL CHECK (rating >= 0 AND rating <= 5),
+    rating REAL NOT NULL CHECK (rating >= 0 AND rating <= 5), 
     timestamp INTEGER NOT NULL DEFAULT (CAST(strftime('%s', 'now') AS INTEGER)),
     UNIQUE (user_id, movie_id),
     FOREIGN KEY (user_id) REFERENCES users(id)
@@ -65,20 +58,6 @@ CREATE TABLE ratings (
         ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
--- Теги
-CREATE TABLE tags (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    movie_id INTEGER NOT NULL,
-    tag TEXT NOT NULL,
-    timestamp INTEGER NOT NULL DEFAULT (CAST(strftime('%s', 'now') AS INTEGER)),
-    FOREIGN KEY (user_id) REFERENCES users(id)
-        ON UPDATE CASCADE ON DELETE CASCADE,
-    FOREIGN KEY (movie_id) REFERENCES movies(id)
-        ON UPDATE CASCADE ON DELETE CASCADE
-);
-
--- Индексы для ускорения поиска
 CREATE INDEX idx_users_last_name ON users(last_name);
 CREATE INDEX idx_movies_title ON movies(title);
 CREATE INDEX idx_movies_year ON movies(year);
